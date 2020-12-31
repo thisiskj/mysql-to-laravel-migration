@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build --base=/mysql-to-laravel-migration/"
   },
   "dependencies": {
     "node-sql-parser": "^3.1.0",
