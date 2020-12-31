@@ -1,13 +1,20 @@
 <template>
     <div class="flex flex-col items-stretch min-h-screen">
-        <div class="border-b-2 border-blue-500 py-4 px-8">
-            <div class="text-xl mb-1">
-                MySQL to Laravel Migration
-                <span class="text-sm ml-2 text-blue-500">BETA</span>
+        <div class="flex justify-between border-b-2 border-blue-500 py-4 px-8">
+            <div>
+                <div class="text-xl mb-1">
+                    MySQL to Laravel Migration
+                    <span class="text-sm ml-2 text-blue-500">BETA</span>
+                </div>
+                <div class="text-sm text-gray-500">
+                    Generate migration files from an existing schema. To begin, enter the
+                    "CREATE TABLE..." statement.
+                </div>
             </div>
-            <div class="text-sm text-gray-500">
-                Generate migration files from an existing schema. To begin, enter the
-                "CREATE TABLE..." statement.
+            <div>
+                <a href="https://github.com/thisiskj/mysql-to-laravel-migration">
+                    <img src="./assets/GitHub-Mark-32px.png" alt="Github"/>
+                </a>
             </div>
         </div>
 
@@ -24,7 +31,7 @@
         <div>
             <div v-if="error" class="border-2 rounded border-red-200 bg-red-50 text-red-500 p-2">
                 Line {{ error.location.start.line }}:{{ error.location.start.column }} -
-                {{ error }}
+                {{ error.message }}
             </div>
             <div v-else class="border-2 rounded border-green-200 bg-green-50 text-green-500 p-2">
                 Syntax Ok
