@@ -6,11 +6,11 @@
     "build": "vite build --base=/mysql-to-laravel-migration/"
   },
   "dependencies": {
-    "node-sql-parser": "^3.1.0",
-    "vue": "^3.0.4"
+    "node-sql-parser": "3.6.5",
+    "vue": "3.2.6"
   },
   "devDependencies": {
-    "@tailwindcss/postcss7-compat": "^2.0.2",
+    "@tailwindcss/postcss7-compat": "npm:@tailwindcss/postcss7-compat@^2.0.2",
     "@vue/compiler-sfc": "^3.0.4",
     "autoprefixer": "^9.8.6",
     "postcss": "^7.0.35",
