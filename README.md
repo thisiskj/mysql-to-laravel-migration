@@ -22,9 +22,8 @@ yarn run dev
 ## Unsupported SQL
 
 Need support for:
-- date columns
-- json columns
 - unique indexes
 - indexes
 - collation
 - charset
+- foreign keys

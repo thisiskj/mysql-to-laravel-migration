@@ -1,10 +1,9 @@
 <template>
     <div class="flex flex-col items-stretch min-h-screen">
-        <div class="flex justify-between border-b-2 border-blue-500 py-4 px-8">
+        <div class="flex justify-between shadow border-b-2 border-gray-200 py-4 px-8">
             <div>
                 <div class="text-xl mb-1">
                     MySQL to Laravel Migration
-                    <span class="text-sm ml-2 text-blue-500">BETA</span>
                 </div>
                 <div class="text-sm text-gray-500">
                     Generate migration files from an existing schema. To begin, enter the
@@ -19,21 +18,27 @@
         </div>
 
         <div class="flex-1 flex justify-between">
-            <div class="flex-1">
-                <textarea v-model="sql" class="p-4 text-sm font-mono w-full h-full focus:outline-none"></textarea>
+            <div class="flex-1 flex flex-col">
+                <div class="bg-blue-500 text-white text-sm shadow px-2 py-4">
+                    Step 1: Enter a CREATE TABLE schema below...
+                </div>
+                <textarea v-model="sql" class=" flex-1 p-4 text-sm font-mono w-full h-full"></textarea>
             </div>
             <div class="border-l-2 border-blue-500"></div>
-            <div class="flex-1">
-        <textarea disabled v-model="migration" class="p-4 text-sm font-mono w-full h-full"></textarea>
+            <div class="flex-1 flex flex-col bg-gray-200">
+                <div class="bg-green-500 text-white text-sm shadow px-2 py-4">
+                    Step 2: View the generated Laravel migration file below
+                </div>
+                <textarea disabled v-model="migration" class="p-4 text-sm font-mono w-full h-full"></textarea>
             </div>
         </div>
 
         <div>
-            <div v-if="error" class="border-2 rounded border-red-200 bg-red-50 text-red-500 p-2">
+            <div v-if="error" class="border-2 border-red-700 bg-red-500 text-white p-2">
                 Line {{ error.location.start.line }}:{{ error.location.start.column }} -
                 {{ error.message }}
             </div>
-            <div v-else class="border-2 rounded border-green-200 bg-green-50 text-green-500 p-2">
+            <div v-else class="bg-green-500 text-white p-2">
                 Syntax Ok
             </div>
         </div>
@@ -46,17 +51,18 @@ import NodeSQLParser from 'node-sql-parser'
 export default {
     data() {
         return {
-            sql: `CREATE TABLE users (
-    id         int           not null auto_increment primary key,
-    name       varchar(30)   null,
-    is_admin   tinyint       not null default 0,
-    bio        text          null comment='biography',
-    record_key bigint        null,
-    ratio      decimal(9, 4) null,
-    created_at datetime      null,
-    updated_at datetime      null
-)
-`,
+            sql: `CREATE TABLE users
+                  (
+                      id         int     not null auto_increment primary key,
+                      name       varchar(30) null,
+                      is_admin   tinyint not null default 0,
+                      bio        text null comment='biography',
+                      record_key bigint null,
+                      ratio      decimal(9, 4) null,
+                      created_at datetime null,
+                      updated_at datetime null
+                  )
+            `,
             ast: null,
             error: null
         };
@@ -92,25 +98,17 @@ export default {
             return s.charAt(0).toUpperCase() + s.slice(1);
         },
         methodForDef(def) {
+            if (!def || !def.column) {
+                return null;
+            }
+
             let method;
             let length;
             let columnName = def.column.column;
 
             switch (def.definition.dataType) {
-                case "INT":
-                    method = `integer('${columnName}')`;
-                    break;
-
-                case "TEXT":
-                    method = `text('${columnName}')`;
-                    break;
-
-                case "VARCHAR":
-                    length =
-                        typeof def.definition.length !== "undefined"
-                            ? def.definition.length
-                            : 64;
-                    method = `string('${columnName}', ${length})`;
+                case "BIGINT":
+                    method = `bigInteger('${columnName}')`;
                     break;
 
                 case "CHAR":
@@ -121,16 +119,8 @@ export default {
                     method = `char('${columnName}', ${length})`;
                     break;
 
-                case "TINYINT":
-                    method = `tinyInteger('${columnName}')`;
-                    break;
-
-                case "SMALLINT":
-                    method = `smallInteger('${columnName}')`;
-                    break;
-
-                case "BIGINT":
-                    method = `bigInteger('${columnName}')`;
+                case "DATE":
+                    method = `date('${columnName}')`;
                     break;
 
                 case "DATETIME":
@@ -148,6 +138,38 @@ export default {
                     } else {
                         method = `decimal('${columnName}')`;
                     }
+                    break;
+
+                case "JSON":
+                    method = `json('${columnName}')`;
+                    break;
+
+                case "INT":
+                    method = `integer('${columnName}')`;
+                    break;
+
+                case "SMALLINT":
+                    method = `smallInteger('${columnName}')`;
+                    break;
+
+                case "TEXT":
+                    method = `text('${columnName}')`;
+                    break;
+
+                case "TIMESTAMP":
+                    method = `timestamp('${columnName}')`;
+                    break;
+
+                case "TINYINT":
+                    method = `tinyInteger('${columnName}')`;
+                    break;
+
+                case "VARCHAR":
+                    length =
+                        typeof def.definition.length !== "undefined"
+                            ? def.definition.length
+                            : 64;
+                    method = `string('${columnName}', ${length})`;
                     break;
 
                 default:
@@ -179,11 +201,19 @@ export default {
         indexesFromAst() {
             let indexes = [];
             this.ast.create_definitions.forEach((def) => {
-                let columnName = def.column.column;
+                if (def.column && def.column.column) {
+                    let columnName = def.column.column;
 
-                if (def.unique_or_primary === "primary key") {
-                    indexes.push(`            $table->primary('${columnName}');`);
+                    if (def.unique_or_primary === "primary key") {
+                        indexes.push(`            $table->primary('${columnName}');`);
+                    }
                 }
+
+                if (def.constraint_type === "primary key") {
+                    let columns = def.definition.map(c => `'${c}'`).join(',')
+                    indexes.push(`            $table->primary(${columns});`);
+                }
+
             });
 
             return indexes;
