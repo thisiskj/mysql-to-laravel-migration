@@ -10,7 +10,8 @@
                     "CREATE TABLE..." statement.
                 </div>
             </div>
-            <div>
+            <div class="flex items-center">
+                <a href="https://www.buymeacoffee.com/thisiskj" class="mr-5" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;" ></a>
                 <a href="https://github.com/thisiskj/mysql-to-laravel-migration">
                     <img src="./assets/GitHub-Mark-32px.png" alt="Github"/>
                 </a>
@@ -26,7 +27,7 @@
             </div>
             <div class="border-l-2 border-blue-500"></div>
             <div class="flex-1 flex flex-col bg-gray-200">
-                <div class="bg-green-500 text-white text-sm shadow px-2 py-4">
+                <div class="bg-blue-800 text-white text-sm shadow px-2 py-4">
                     Step 2: View the generated Laravel migration file below
                 </div>
                 <textarea disabled v-model="migration" class="p-4 text-sm font-mono w-full h-full"></textarea>
