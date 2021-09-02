@@ -22,7 +22,7 @@
                 <div class="bg-blue-500 text-white text-sm shadow px-2 py-4">
                     Step 1: Enter a CREATE TABLE schema below...
                 </div>
-                <textarea v-model="sql" class=" flex-1 p-4 text-sm font-mono w-full h-full"></textarea>
+                <div id="editor" class="flex-1 pt-2 w-full h-full"></div>
             </div>
             <div class="border-l-2 border-blue-500"></div>
             <div class="flex-1 flex flex-col bg-gray-200">
@@ -33,13 +33,10 @@
             </div>
         </div>
 
-        <div>
-            <div v-if="error" class="border-2 border-red-700 bg-red-500 text-white p-2">
+        <div v-if="error" class="fixed top-0 left-0 right-0 inset-2">
+            <div class="border-2 border-red-700 bg-red-500 text-white p-2">
                 Line {{ error.location.start.line }}:{{ error.location.start.column }} -
                 {{ error.message }}
-            </div>
-            <div v-else class="bg-green-500 text-white p-2">
-                Syntax Ok
             </div>
         </div>
     </div>
@@ -47,24 +44,51 @@
 
 <script>
 import NodeSQLParser from 'node-sql-parser'
+import * as monaco from 'monaco-editor'
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
+import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
+import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
+import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
+
+self.MonacoEnvironment = {
+    getWorker(_, label) {
+        if (label === 'json') {
+            return new jsonWorker()
+        }
+        if (label === 'css' || label === 'scss' || label === 'less') {
+            return new cssWorker()
+        }
+        if (label === 'html' || label === 'handlebars' || label === 'razor') {
+            return new htmlWorker()
+        }
+        if (label === 'typescript' || label === 'javascript') {
+            return new tsWorker()
+        }
+        return new editorWorker()
+    }
+}
+
+let editor = {};
 
 export default {
     data() {
         return {
             sql: `CREATE TABLE users
-                  (
-                      id         int     not null auto_increment primary key,
-                      name       varchar(30) null,
-                      is_admin   tinyint not null default 0,
-                      bio        text null comment='biography',
-                      record_key bigint null,
-                      ratio      decimal(9, 4) null,
-                      created_at datetime null,
-                      updated_at datetime null
-                  )
-            `,
+(
+    id         int     not null auto_increment primary key,
+    name       varchar(30) null,
+    is_admin   tinyint not null default 0,
+    bio        text null comment='biography',
+    record_key bigint null,
+    ratio      decimal(9, 4) null,
+    created_at datetime null,
+    updated_at datetime null
+)
+`,
             ast: null,
-            error: null
+            error: null,
+            editorDecorations: [],
         };
     },
     methods: {
@@ -80,9 +104,24 @@ export default {
                 } else {
                     this.ast = ast;
                 }
+
+                if (editor && editor.deltaDecorations) {
+                    editor.deltaDecorations(this.editorDecorations, []);
+                }
+
                 console.log(ast);
             } catch (error) {
                 console.error(error);
+
+                if (editor.deltaDecorations && error && error.location) {
+                    this.editorDecorations = editor.deltaDecorations(this.editorDecorations, [
+                        {
+                            range: new monaco.Range(error.location.start.line, error.location.start.column, error.location.start.line, 9999),
+                            options: {inlineClassName: 'editorInlineError'}
+                        },
+                    ]);
+                }
+
                 this.error = error;
             }
         },
@@ -282,8 +321,26 @@ ${indexes}
     },
     mounted() {
         this.parse();
-    }
+
+        editor = monaco.editor.create(document.getElementById('editor'), {
+            fontSize: "14px",
+            value: this.sql,
+            language: 'sql',
+            minimap: {
+                enabled: false
+            },
+        });
+
+        editor.getModel().onDidChangeContent((event) => {
+            console.log(editor.getValue())
+            this.sql = editor.getValue()
+        });
+    },
 };
 </script>
 
-<style></style>
+<style>
+.editorInlineError {
+    @apply bg-red-500 text-white
+}
+</style>
