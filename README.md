@@ -19,11 +19,9 @@ yarn install
 yarn run dev
 ```
 
-## Unsupported SQL
+## Unsupported CREATE TABLE features
 
 Need support for:
-- unique indexes
-- indexes
 - collation
 - charset
 - foreign keys

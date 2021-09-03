@@ -189,6 +189,11 @@ export default {
                     }
                     break;
 
+                case "ENUM":
+                    let values = def.definition.expr.value.map(v => `'${v.value}'`).join(',');
+                    method = `enum('${columnName}', [${values}])`;
+                    break;
+
                 case "JSON":
                     method = `json('${columnName}')`;
                     break;
@@ -260,7 +265,17 @@ export default {
 
                 if (def.constraint_type === "primary key") {
                     let columns = def.definition.map(c => `'${c}'`).join(',')
-                    indexes.push(`            $table->primary(${columns});`);
+                    indexes.push(`            $table->primary([${columns}]);`);
+                }
+
+                if (def.constraint_type === "unique key") {
+                    let columns = def.definition.map(c => `'${c}'`).join(',')
+                    indexes.push(`            $table->unique([${columns}]);`);
+                }
+
+                if (def.keyword === "key") {
+                    let columns = def.definition.map(c => `'${c}'`).join(',')
+                    indexes.push(`            $table->index([${columns}]);`);
                 }
 
             });
@@ -285,13 +300,19 @@ export default {
             let columns = this.ast.create_definitions
                 .map((def) => {
                     let method = this.methodForDef(def);
+
+                    if (! method) {
+                        return null
+                    }
+
                     let modifiers = this.modifiersForDef(def);
 
                     return `            $table->${method}${modifiers};`;
                 })
+                .filter(col => col !== null)
                 .join("\n");
 
-            let indexes = this.indexesFromAst();
+            let indexes = this.indexesFromAst().join("\n");
 
             return `<?php
 
