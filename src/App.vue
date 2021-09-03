@@ -27,8 +27,16 @@
             </div>
             <div class="border-l-2 border-blue-500"></div>
             <div class="flex-1 flex flex-col bg-gray-200">
-                <div class="bg-blue-800 text-white text-sm shadow px-2 py-4">
-                    Step 2: View the generated Laravel migration file below
+                <div class="flex justify-between items-centered bg-blue-800 text-white text-sm shadow px-2 py-4">
+                    <div>
+                        Step 2: View the generated Laravel migration file below
+                    </div>
+                    <div @click="copyToClipboard" class="flex items-center hover:text-gray-200 cursor-pointer">
+                        <span v-if="recentlyCopied" class="mr-5">Copied to Clipboard!</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                    </div>
                 </div>
                 <textarea disabled v-model="migration" class="p-4 text-sm font-mono w-full h-full"></textarea>
             </div>
@@ -90,6 +98,7 @@ export default {
             ast: null,
             error: null,
             editorDecorations: [],
+            recentlyCopied: false,
         };
     },
     methods: {
@@ -257,6 +266,11 @@ export default {
             });
 
             return indexes;
+        },
+        copyToClipboard() {
+            navigator.clipboard.writeText(this.migration);
+            this.recentlyCopied = true
+            setTimeout(() => this.recentlyCopied = false, 5000)
         }
     },
     computed: {
