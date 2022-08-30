@@ -18,6 +18,6 @@
     "monaco-editor-webpack-plugin": "^4.1.2",
     "postcss": "^8.2.13",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2",
-    "vite": "2.5.1"
+    "vite": "2.9.13"
   }
 }
