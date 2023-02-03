@@ -218,6 +218,10 @@ export default {
                     method = `tinyInteger('${columnName}')`;
                     break;
 
+                case "MEDIUMTEXT":
+                    method = `mediumText('${columnName}')`;
+                    break;
+
                 case "VARCHAR":
                     length =
                         typeof def.definition.length !== "undefined"
