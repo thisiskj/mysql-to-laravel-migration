@@ -247,6 +247,9 @@ export default {
             }
 
             if (def.default_val) {
+                if(def.default_val.value.value === 'null') {
+                    modifiers.push('->nullable()');
+                }
                 modifiers.push(`->default(${def.default_val.value.value})`);
             }
 
